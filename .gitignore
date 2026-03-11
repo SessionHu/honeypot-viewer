@@ -1,0 +1,6 @@
+cgi-bin/
+public/dist/
+node_modules/
+example.*
+*.swp
+*.o
