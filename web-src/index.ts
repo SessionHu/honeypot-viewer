@@ -49,7 +49,7 @@ export class HoneypotMap {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       minZoom: 2,
-      attribution: '© OpenStreetMap contributors',
+      attribution: '&copy; OpenStreetMap contributors | &copy; SESS.DN42 Honeypot Viewer',
     }).addTo(this.#map);
     // layer for curve and bot markers
     this.#curveLayer = L.layerGroup().addTo(this.#map);
@@ -74,9 +74,9 @@ export class HoneypotMap {
     // draw
     const pathData = ['M', from, 'Q', cp, to];
     const curve = L.curve(pathData as any, {
-      color: '#00ffcc',
+      color: '#ffc0cb',
       weight: 4,
-      opacity: 0.6,
+      opacity: .9,
       fill: false,
       dashArray: '4, 8', // 漂亮的呼吸虚线效果
       animate: { duration: 2000, iterations: Infinity } // 部分版本支持原生动画
@@ -97,10 +97,10 @@ export class HoneypotMap {
       }
       // draw
       const elem = document.createElement('pre');
-			elem.textContent = JSON.stringify(bot, null, 2);
+      elem.textContent = JSON.stringify(bot, null, 2);
       L.circleMarker([
         bot.more.latitude, bot.more.longitude
-      ], { radius: 3, color: '#00ffcc' }).bindPopup(elem).addTo(this.#curveLayer);
+      ], { radius: 3, color: '#ffc0cb' }).bindPopup(elem).addTo(this.#curveLayer);
       this.drawCurve(SERVER_LOC, [
         bot.more.latitude, bot.more.longitude
       ]);
@@ -119,7 +119,11 @@ const honeyIcon = L.divIcon({
 const myApp = new HoneypotMap('map');
 // add data
 (async function cb() {
-  const json: StatusRes[] = await (await fetch('/cgi-bin/status')).json();
-  myApp.renderBots(json);
-  setTimeout(cb, 2.4e5); // refresh each 4min
+  try {
+    myApp.renderBots(await (await fetch('/cgi-bin/status')).json());
+    setTimeout(cb, 2.4e5); // refresh each 4min
+  } catch (e) {
+    console.error(e);
+    setTimeout(cb, 1e3); // retry immediately
+  }
 })();
