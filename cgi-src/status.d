@@ -1,6 +1,6 @@
 import std.stdio : File, stderr, stdout;
-import std.file : DirEntry, SpanMode, dirEntries, exists, readLink, readText;
-import std.path : baseName;
+import std.file : DirEntry, SpanMode, dirEntries, exists, mkdirRecurse, readLink, readText, write;
+import std.path : baseName, buildPath;
 import std.string : split, splitLines, startsWith, strip;
 import std.algorithm : all, canFind, find;
 import std.conv : to;
@@ -13,6 +13,7 @@ import std.parallelism : defaultPoolThreads, parallel;
 import core.time : seconds;
 import std.range : drop;
 import std.ascii : isDigit;
+import std.process : environment;
 import core.sys.posix.unistd : sysconf, _SC_CLK_TCK;
 
 // 确保小端序
@@ -105,8 +106,46 @@ ConnectionInfo getProcessDetails(string pidPath) {
   return info;
 }
 
+string cachedir;
+
+JSONValue queryInfoIP(string ip) {
+  auto cachepath = buildPath(cachedir, ip);
+  try {
+    string content = readText(cachepath);
+    if (content.length > 0) return parseJSON(content);
+  } catch (Exception) {
+    // do nothing
+  }
+  try {
+    auto url = "https://ip.shakaianee.top/" ~ ip ~ "?f=json";
+    auto client = HTTP(url);
+    client.operationTimeout = 4.seconds;
+    auto contentAppender = appender!(ubyte[])();
+    client.onReceive = (ubyte[] data) {
+      contentAppender.put(data);
+      return data.length;
+    };
+    client.perform();
+    string content = cast(string)contentAppender.data;
+    if (content.length > 0) {
+      try {
+        write(cachepath, content);
+      } catch (Exception) {
+        // do nothing...
+      }
+      return parseJSON(content);
+    }
+  } catch (Exception e) {
+    return JSONValue(["error": e.msg]);
+  }
+  return JSONValue(["error": "empty response from server"]);
+}
+
 void main() {
   hz = sysconf(_SC_CLK_TCK);
+  cachedir = buildPath(environment.get("TMPDIR", "/tmp"), "honeypot-viewer");
+  if (!exists(cachedir)) mkdirRecurse(cachedir);
+
   ConnectionInfo[] rawBots;
 
   // 第一阶段：同步遍历 /proc 获取本地进程快照
@@ -139,30 +178,7 @@ void main() {
     j["cpu"] = bot.cpuTime;
     j["time"] = bot.procTime;
     j["args"] = bot.args;
-
-    // 请求 IP 接口
-    try {
-      auto url = "https://ip.shakaianee.top/" ~ bot.ip ~ "?f=json";
-      auto client = HTTP(url);
-      client.operationTimeout = 4.seconds;
-
-      // 用 Appender 收集原始字节喵，这比 get!T 稳健得多
-      auto contentAppender = appender!(ubyte[])();
-      client.onReceive = (ubyte[] data) {
-        contentAppender.put(data);
-        return data.length;
-      };
-      client.perform();
-
-      // 关键一步：把原始字节流直接标记为 string (UTF-8)
-      string content = cast(string)contentAppender.data;
-
-      if (content.length > 0) {
-        j["more"] = parseJSON(content);
-      }
-    } catch (Exception e) {
-      j["more"] = JSONValue(["error": e.msg]);
-    }
+    j["more"] = queryInfoIP(bot.ip);
     jsonBots[i] = j;
   }
 
