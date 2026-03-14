@@ -42,14 +42,17 @@ export class HoneypotMap {
       maxBounds: L.latLngBounds(
         [-90, SERVER_LOC[1] - 180 - 45],
         [90, SERVER_LOC[1] + 180 + 45]
-      )
+      ),
+      fadeAnimation: true,
     }).setView(SERVER_LOC, 2);
 
     // tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'/*'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'*/, {
       maxZoom: 19,
       minZoom: 2,
-      attribution: '&copy; OpenStreetMap contributors | &copy; SESS.DN42 Honeypot Viewer',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; SESS.DN42 <a href="https://github.com/SessionHu/honeypot-viewer">Honeypot Viewer</a>',
+      detectRetina: true,
+      updateWhenIdle: true,
     }).addTo(this.#map);
     // layer for curve and bot markers
     this.#curveLayer = L.layerGroup().addTo(this.#map);
