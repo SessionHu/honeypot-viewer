@@ -14,13 +14,9 @@ interface StatusRes {
     addr: string,
     city: string,
     country: string,
-    country_code: string,
-    domain: string,
-    idd_code: number,
     isp: string,
-    latitude: number,
-    longitude: number,
-    region: string
+    latitude: number | string,
+    longitude: number | string,
   }
 };
 
@@ -92,7 +88,10 @@ export class HoneypotMap {
    */
   public renderBots(bots: Array<StatusRes>) {
     this.#curveLayer.clearLayers();
-    bots.filter(b => b.more.longitude !== void 0 && b.more.latitude !== void 0).forEach(bot => {
+    for (const bot of bots) {
+			bot.more.longitude = Number(bot.more.longitude);
+			bot.more.latitude = Number(bot.more.latitude);
+      if (isNaN(bot.more.longitude) || isNaN(bot.more.latitude)) break;
       // the Earth is not flat
       if (Math.abs(bot.more.longitude - SERVER_LOC[1]) > 180) {
         if (bot.more.longitude > SERVER_LOC[1]) bot.more.longitude -= 360;
@@ -107,7 +106,7 @@ export class HoneypotMap {
       this.drawCurve(SERVER_LOC, [
         bot.more.latitude, bot.more.longitude
       ]);
-    });
+    }
   }
 }
 

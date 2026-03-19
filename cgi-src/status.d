@@ -117,7 +117,7 @@ JSONValue queryInfoIP(string ip) {
     // do nothing
   }
   try {
-    auto url = "https://ip.shakaianee.top/" ~ ip ~ "?f=json";
+    auto url = "https://api.live.bilibili.com/ip_service/v1/ip_service/get_ip_addr?ip=" ~ ip;
     auto client = HTTP(url);
     client.operationTimeout = 4.seconds;
     auto contentAppender = appender!(ubyte[])();
@@ -133,7 +133,7 @@ JSONValue queryInfoIP(string ip) {
       } catch (Exception) {
         // do nothing...
       }
-      return parseJSON(content);
+      return parseJSON(content)["data"];
     }
   } catch (Exception e) {
     return JSONValue(["error": e.msg]);
