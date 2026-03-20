@@ -91,7 +91,7 @@ export class HoneypotMap {
     for (const bot of bots) {
 			bot.more.longitude = Number(bot.more.longitude);
 			bot.more.latitude = Number(bot.more.latitude);
-      if (isNaN(bot.more.longitude) || isNaN(bot.more.latitude)) break;
+      if (isNaN(bot.more.longitude) || isNaN(bot.more.latitude)) continue;
       // the Earth is not flat
       if (Math.abs(bot.more.longitude - SERVER_LOC[1]) > 180) {
         if (bot.more.longitude > SERVER_LOC[1]) bot.more.longitude -= 360;
