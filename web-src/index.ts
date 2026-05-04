@@ -23,7 +23,7 @@ interface StatusRes {
 /**
  * Server location
  */
-const SERVER_LOC: [number, number] = [45.5946, -121.1787];
+const SERVER_LOC: [number, number] = [22.362482, 114.119047];
 
 export class HoneypotMap {
   #map: L.Map;
