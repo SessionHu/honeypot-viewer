@@ -112,7 +112,7 @@ JSONValue queryInfoIP(string ip) {
   auto cachepath = buildPath(cachedir, ip);
   try {
     string content = readText(cachepath);
-    if (content.length > 0) return parseJSON(content);
+    if (content.length > 0) return parseJSON(content)["data"];
   } catch (Exception) {
     // do nothing
   }
