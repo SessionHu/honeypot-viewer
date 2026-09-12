@@ -43,12 +43,13 @@ export class HoneypotMap {
     }).setView(SERVER_LOC, 2);
 
     // tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.osmtileproxy.sess.dn42/{z}/{x}/{y}.png', {
       maxZoom: 19,
       minZoom: 2,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; SESS.DN42 <a href="https://github.com/SessionHu/honeypot-viewer">Honeypot Viewer</a>',
       detectRetina: true,
       updateWhenIdle: true,
+      subdomains: 'abcd',
     }).addTo(this.#map);
     // layer for curve and bot markers
     this.#curveLayer = L.layerGroup().addTo(this.#map);
